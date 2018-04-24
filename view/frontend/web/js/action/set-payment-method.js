@@ -44,8 +44,6 @@ define(
                 serviceUrl, JSON.stringify(payload)
             ).done(
                 function () {
-                    //$.mage.redirect(window.checkoutConfig.payment.paypalExpress.redirectUrl[quote.paymentMethod().method]);
-                    //$.mage.redirect('http://www.magento.net/test.php');
                     $.mage.redirect('/khalti/request/redirect');
                 }
             ).fail(

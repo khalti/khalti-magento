@@ -176,7 +176,6 @@ class Response extends \Magento\Framework\App\Action\Action
         curl_setopt_array($curl, array(
         CURLOPT_RETURNTRANSFER => 1,
         CURLOPT_URL => 'https://khalti.com.np/epay/transdetails?amt='.$amt.'&scd=OLIZ&pid='.$oid,
-        //CURLOPT_URL => 'http://www.magento.net/khalti/details.php?amt='.$amt.'&scd=OLIZ&pid='.$oid, //test
         CURLOPT_USERAGENT => 'Codular Sample cURL Request'
         ));
         // Send the request & save response to $resp

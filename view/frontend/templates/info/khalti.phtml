@@ -9,10 +9,6 @@
 * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
 */
 
-/**
- * @var \Magento\Paypal\Block\Checkout\Onepage\Success\BillingAgreement $block
- */
-
 /*
 ?>
 <div>
@@ -20,9 +16,8 @@
   <tbody>
     <tr>
       <td colspan="2" style="text-align: center;border-bottom: 1px solid black;font-weight: bold; font-size: 13px;">
-        Pagamento por Multibanco ou Homebanking
         <br />
-        <img src="<?php echo $block->getViewFileUrl('Ifthenpay_Multibanco::images/multibanco.jpg')?>" style="width: 100px;" />
+        <img src="" style="width: 100px;" />
       </td>
     </tr>
     <tr>
@@ -30,7 +25,6 @@
         Entidade
       </td>
       <td style="text-align: right;font-weight: bold;">
-        <?php echo $block->getEntidade(); ?>
       </td>
     </tr>
     <tr>
@@ -38,7 +32,6 @@
         Referencia
       </td>
       <td style="font-weight: bold;text-align: right;">
-        <?php echo $block->getReferenciaFront(true); ?>
       </td>
     </tr>
     <tr>
@@ -46,12 +39,10 @@
         Valor
       </td>
       <td style="font-weight: bold;text-align: right;">
-        <?php echo $block->getValorFront(); ?>
       </td>
     </tr>
     <tr>
       <td colspan="2" style="text-align: center;font-weight: bold;border-top: 1px solid black; font-size: 7px;">
-        O talao emitido pela caixa automatica faz prova de pagamento. Conserve-o.
       </td>
     </tr>
   </tbody>

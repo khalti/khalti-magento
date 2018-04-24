@@ -43,25 +43,4 @@ class Instructions extends \Magento\Config\Block\System\Config\Form\Field
         $columns = $this->getRequest()->getParam('website') || $this->getRequest()->getParam('store') ? 5 : 4;
         return $this->_decorateRowHtml($element, "<td colspan='{$columns}'>" . $this->toHtml() . '</td>');
     }
-
-/*    public function getEntidade()
-    {
-        return $this->_ifthenpayMbHelper->getEntidade();
-    }
-
-    public function getSubentidade()
-    {
-        return $this->_ifthenpayMbHelper->getSubentidade();
-    }
-
-    public function getUrlCallback()
-    {
-        return $this->_storeManager->getStore()->getBaseUrl().
-        "ifthenpay/Callback/Check/k/[CHAVE_ANTI_PHISHING]/e/[ENTIDADE]/r/[REFERENCIA]/v/[VALOR]";
-    }
-
-    public function getAntiPhishingKey()
-    {
-        return $this->_ifthenpayMbHelper->getAntiPhishing();
-    }*/
 }

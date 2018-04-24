@@ -84,8 +84,6 @@ class Redirect extends \Magento\Framework\View\Element\Template
     */
     public function getOrderId()
     {
-        //return $this->getOrder()->getRealOrderId();
-        //var_dump($this->getOrder()->getGrandTotal());die();
         return $this->_checkoutSession->getLastRealOrderId();
     }
 
