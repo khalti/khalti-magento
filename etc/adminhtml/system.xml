@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<!--
+/**
+* Fourwallsinn_Khalti
+*
+* @category    Payment Gateway
+* @package     Fourwallsinn_Khalti
+* @author      4 Walls Innovations
+* @copyright   4 Walls Innovations (http://www.4wallsinn.com)
+* @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+*/
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+  <system>
+    <section id="payment" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+      <group id="khalti" translate="label" type="text" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="1">
+        <label><![CDATA[Khalti Payment Gateway]]></label>
+        <field id="active" translate="label" type="select" sortOrder="1" showInDefault="1" showInWebsite="1" showInStore="0">
+          <label>Active</label>
+          <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+        </field>
+        <field id="title" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+          <label>Title</label>
+        </field>
+        <field id="khalti_merchant_id" translate="label" type="text" sortOrder="3" showInDefault="1" showInWebsite="1" showInStore="1">
+          <label>Merchant ID</label>
+          
+        </field>
+        <field id="order_status" translate="label" type="select" sortOrder="4" showInDefault="1" showInWebsite="1" showInStore="0">
+          <label>New Order Status</label>
+          <source_model>Magento\Sales\Model\Config\Source\Order\Status\NewStatus</source_model>
+        </field>
+        <field id="sort_order" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
+          <label>Sort Order</label>
+          <frontend_class>validate-number</frontend_class>
+        </field>
+<!--         <field id="fourwallsinn_entidade" translate="label" type="text" sortOrder="5" showInDefault="1" showInWebsite="1" showInStore="0">
+          <label>Entity</label>
+        </field>
+        <field id="fourwallsinn_subentidade" translate="label" type="text" sortOrder="6" showInDefault="1" showInWebsite="1" showInStore="0">
+          <label>SubEntity</label>
+        </field> -->
+        <field id="instructions" translate="label" type="textarea" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="1">
+          <label>Instructions</label>
+        </field>
+        <field id="allowspecific" translate="label" type="allowspecific" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="0">
+          <label>Payment from Applicable Countries</label>
+          <source_model>Magento\Payment\Model\Config\Source\Allspecificcountries</source_model>
+        </field>
+        <field id="specificcountry" translate="label" type="multiselect" sortOrder="9" showInDefault="1" showInWebsite="1" showInStore="0">
+          <label>Payment from Specific Country</label>
+          <source_model>Magento\Directory\Model\Config\Source\Country</source_model>
+        </field>
+        <field id="fourwallsinn_callback_info" sortOrder="11" showInDefault="1" showInWebsite="1" showInStore="1">
+            <frontend_model>Fourwallsinn\Khalti\Block\Adminhtml\System\Config\Info\Instructions</frontend_model>
+        </field>
+        <field id="model"></field>
+      </group>
+    </section>
+  </system>
+</config>

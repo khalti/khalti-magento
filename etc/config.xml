@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!--
+/**
+* Fourwallsinn_Khalti
+*
+* @category    Payment Gateway
+* @package     Fourwallsinn_Khalti
+* @author      4 Walls Innovations
+* @copyright   4 Walls Innovations (http://www.4wallsinn.com)
+* @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+*/
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <payment>
+            <khalti>
+                <active>1</active>
+                <model>Fourwallsinn\Khalti\Model\Khalti</model>
+                <order_status>pending_payment</order_status>
+                <sort_order>1</sort_order>
+                <title><![CDATA[Khalti]]></title>
+                <instructions><![CDATA[You will be redirected to Khalti Website]]></instructions>
+                <allowspecific>0</allowspecific>
+            </khalti>
+        </payment>
+    </default>
+</config>
