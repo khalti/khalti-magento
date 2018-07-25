@@ -31,11 +31,9 @@ class Response extends \Magento\Framework\View\Element\Template
     protected $_orderFactory;
 
     /**
-     * @var \RealexPayments\HPP\Helper\Data
+     * @var \Fourwallsinn\Khalti\Helper\Data
      */
     protected $_helper;
-
-    //public $_template = 'response/redirect.phtml';
 
     public function __construct(
         \Magento\Framework\View\Element\Template\Context $context,
@@ -88,7 +86,7 @@ class Response extends \Magento\Framework\View\Element\Template
     }
 
     /**
-    * Get the Grand Total. Multiplying by 100 because our base currency is in Dollar
+    * Get the Grand Total.
     *
     * @return order grand total id
     */

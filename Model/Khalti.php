@@ -29,10 +29,10 @@ class Khalti extends \Magento\Payment\Model\Method\AbstractMethod
     protected $_canUseForMultishipping  = false;
 
 
-/*    public function getInstructions()
-    {
-        return trim($this->getConfigData('instructions'));
-    }*/
+    //  public function getInstructions()
+    // {
+    //     return trim($this->getConfigData('instructions'));
+    // }
 
 
 }

@@ -11,6 +11,8 @@
 
 namespace Fourwallsinn\Khalti\Controller\Response;
 
+use Fourwallsinn\Khalti\Helper\Data as KhaltiHelper;
+
 class Response extends \Magento\Framework\App\Action\Action
 {
     protected $orderRepository;
@@ -51,7 +53,8 @@ class Response extends \Magento\Framework\App\Action\Action
         \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender,
         \Magento\Framework\DB\Transaction $transaction,
         \Magento\Framework\App\ResponseFactory $responseFactory,
-        \Magento\Framework\UrlInterface $url
+        \Magento\Framework\UrlInterface $url,
+        KhaltiHelper $paymentHelper
     ) {
         $this->agreementsValidator = $agreementValidator;
         $this->_checkoutSession = $checkoutSession;
@@ -69,24 +72,23 @@ class Response extends \Magento\Framework\App\Action\Action
         $this->_invoiceSender = $invoiceSender;
         $this->_responseFactory = $responseFactory;
         $this->_url = $url;
+        $this->khaltiHelper = $paymentHelper;
         parent::__construct($context);
-        //$this->_getOrder();
     }
 
     public function execute()
     {
         $token = isset( $_GET['token'] ) ? $_GET['token'] : "";
         $amount = isset( $_GET['amount'] ) ? $_GET['amount'] : "";
-        $validate = self::khalti_validate($token,$amount);
+        $validate = $this->khalti_validate($token,$amount);
         $status_code = $validate['status_code'];
         $idx = $validate['idx'];
-        //var_dump($validate);die();
+
         $order = $this->_checkoutSession->getLastRealOrder();
         $orderId = $this->_checkoutSession->getLastRealOrderId();
-        $total = $order->getBaseGrandTotal()*100*100;
-        //die($validate);
-        //only enter this part if the last checkout session and khalti reutnred data are same
-        if($amount=="$total" && $idx!=null)
+        $total = $order->getBaseGrandTotal()*100;
+
+        if($amount=="$total" && $idx!=null && $status_code == 200)
         {
             $note = json_encode($validate);
             $order->setState(\Magento\Sales\Model\Order::STATE_PROCESSING)
@@ -94,7 +96,7 @@ class Response extends \Magento\Framework\App\Action\Action
             $order->save();
 
             if($order->canInvoice()) {
-                //die("can invoice");
+
                 $invoice = $this->_invoiceService->prepareInvoice($order);
                 $invoice->register();
                 $invoice->save();
@@ -105,15 +107,13 @@ class Response extends \Magento\Framework\App\Action\Action
                 );
                 $transactionSave->save();
                 $this->_invoiceSender->send($invoice);
-                //send notification code
+
                 $order->addStatusHistoryComment(
                     __($note)
                 )
                 ->setIsCustomerNotified(true)
                 ->save();
-                //die('Invoice Created');
             }
-            //die('success');
             $RedirectUrl = $this->_url->getUrl('checkout/onepage/success');
             $this->_responseFactory->create()->setRedirect($RedirectUrl)->sendResponse();
             die();
@@ -132,7 +132,6 @@ class Response extends \Magento\Framework\App\Action\Action
     public function cancelOrder()
     {
         $this->_checkoutSession->getLastRealOrder()->cancel()->save();
-        //f$this->_redirect->redirect($controller->getResponse(), 'my/custom/url');
     }
 
     public function khalti_validate($token,$amount)
@@ -151,7 +150,7 @@ class Response extends \Magento\Framework\App\Action\Action
         curl_setopt($ch, CURLOPT_POSTFIELDS,$args);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
-        $headers = ['Authorization: Key test_secret_key_e93b7d5c980e4cb5a1eed6b3d4ba5068'];
+        $headers = ['Authorization: Key'.$this->khaltiHelper->getSecretKey()];
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
         // Response
@@ -159,36 +158,13 @@ class Response extends \Magento\Framework\App\Action\Action
         $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
         $response = json_decode($response);
-        $idx = $response->idx;
+        $idx = @$response->idx;
         $data = array(
             "idx" => $idx,
             "status_code" => $status_code
         );
         curl_close($ch);
         return $data;
-    }
-
-    public function khalti_details($amt,$oid)
-    {
-        // Get cURL resource
-        $curl = curl_init();
-        // Set some options - we are passing in a useragent too here
-        curl_setopt_array($curl, array(
-        CURLOPT_RETURNTRANSFER => 1,
-        CURLOPT_URL => 'https://khalti.com.np/epay/transdetails?amt='.$amt.'&scd=OLIZ&pid='.$oid,
-        CURLOPT_USERAGENT => 'Codular Sample cURL Request'
-        ));
-        // Send the request & save response to $resp
-        $result = curl_exec($curl);
-        // Close request to clear up some resources
-        curl_close($curl);
-        $subject = $result;
-        $search = '{"code":"00","msg":"Success",';
-        $trimmed = str_replace($search, '', $subject);
-        $search = '}}';
-        $final = str_replace($search, '}', $trimmed);
-        return $final;
-                    
     }
 
 }

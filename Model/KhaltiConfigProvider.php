@@ -13,18 +13,12 @@ namespace Fourwallsinn\Khalti\Model;
 
 use Magento\Checkout\Model\ConfigProviderInterface;
 use Magento\Framework\Escaper;
-use Magento\Payment\Helper\Data as PaymentHelper;
-
+use Fourwallsinn\Khalti\Helper\Data as KhaltiHelper;
 class KhaltiConfigProvider implements ConfigProviderInterface
 {
-    const CODE = 'khalti';
+    protected $khaltiHelper;
 
-    /**
-     * @var string[]
-     */
-    public $methodCodes = [
-        Khalti::PAYMENT_METHOD_ESEWA_CODE,
-    ];
+    const CODE = 'khalti';
 
     /**
      * @var \Magento\Payment\Model\Method\AbstractMethod[]
@@ -41,13 +35,11 @@ class KhaltiConfigProvider implements ConfigProviderInterface
      * @param Escaper $escaper
      */
     public function __construct(
-        PaymentHelper $paymentHelper,
+        KhaltiHelper $paymentHelper,
         Escaper $escaper
     ) {
         $this->escaper = $escaper;
-        foreach ($this->methodCodes as $code) {
-            $this->methods[$code] = $paymentHelper->getMethodInstance($code);
-        }
+        $this->khaltiHelper = $paymentHelper;
     }
 
     /**
@@ -55,13 +47,14 @@ class KhaltiConfigProvider implements ConfigProviderInterface
      */
     public function getConfig()
     {
-        $config = [];
-        foreach ($this->methodCodes as $code) {
-            if ($this->methods[$code]->isAvailable()) {
-                $config['payment']['instructions'][$code] = $this->getInstructions($code);
-            }
-        }
-        return $config;
+
+        return [
+            'payment' => [
+                self::CODE => [
+                    "khalti_public_key" => $this->khaltiHelper->getPublicKey()
+                ]
+            ]
+        ]; 
     }
 
     /**

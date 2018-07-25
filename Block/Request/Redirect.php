@@ -10,9 +10,7 @@
 */
 namespace Fourwallsinn\Khalti\Block\Request;
 
-/**
- * Abstract class for Cash On Delivery and Bank Transfer payment method form
- */
+
 class Redirect extends \Magento\Framework\View\Element\Template
 {
     /**
@@ -31,7 +29,7 @@ class Redirect extends \Magento\Framework\View\Element\Template
     protected $_orderFactory;
 
     /**
-     * @var \RealexPayments\HPP\Helper\Data
+     * @var \Fourwallsinn\Khalti\Helper\Data
      */
     protected $_helper;
 
@@ -88,7 +86,7 @@ class Redirect extends \Magento\Framework\View\Element\Template
     }
 
     /**
-    * Get the Grand Total. Multiplying by 100 because our base currency is in Dollar
+    * Get the Grand Total
     *
     * @return order grand total id
     */
@@ -108,14 +106,19 @@ class Redirect extends \Magento\Framework\View\Element\Template
         return $this->_helper->getMerchantId();
     }
 
-    public function getKhaltiLiveUrl()
+    public function getPublicKey()
     {
-        return 'https://khalti.com.np/epay/main';
+        return $this->_helper->getPublicKey();
     }
 
-    public function getKhaltiTestUrl()
+    public function getSecretKey()
     {
-        return 'http://www.magento.net/test.php';
+        return $this->_helper->getSecretKey();
+    }
+
+    public function getKhaltiMode()
+    {
+        return $this->_helper->getKhaltiMode();
     }
 
 

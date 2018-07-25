@@ -10,9 +10,6 @@
 */
 namespace Fourwallsinn\Khalti\Block\Form;
 
-/**
- * Abstract class for Cash On Delivery and Bank Transfer payment method form
- */
 class Khalti extends \Magento\Payment\Block\Form
 {
     public $_template = 'form/khalti.phtml';
@@ -32,7 +29,6 @@ class Khalti extends \Magento\Payment\Block\Form
     public function getInstructions()
     {
         if ($this->_instructions === null) {
-            /** @var \Magento\Payment\Model\Method\AbstractMethod $method */
             $method = $this->getMethod();
             $this->_instructions = $method->getConfigData('instructions');
         }

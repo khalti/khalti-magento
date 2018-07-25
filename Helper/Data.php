@@ -11,32 +11,27 @@
 
 namespace Fourwallsinn\Khalti\Helper;
 
+use \Magento\Framework\App\Config\ScopeConfigInterface as ScopeConfigInterface;
+
 class Data extends \Magento\Framework\App\Helper\AbstractHelper
 {
-    const ESEWA_MERCHANT_ID = 'payment/khalti/khalti_merchant_id';
+    const KHALTI_LIVE_PUBLIC_KEY = 'payment/khalti/khalti_live_public_key';
+    const KHALTI_LIVE_SECRET_KEY = 'payment/khalti/khalti_live_secret_key';
+    const KHALTI_TEST_PUBLIC_KEY = 'payment/khalti/khalti_test_public_key';
+    const KHALTI_TEST_SECRET_KEY = 'payment/khalti/khalti_test_secret_key';
+    const KHALTI_MODE            = 'payment/khalti/khalti_test_mode';
 
-    public $_configTable;
-    public $_orderTable;
-    public $connection;
-    protected $_checkoutSession;
-    public $_orderFactory;
+    public      $_configTable;
+    public      $_orderTable;
+    public      $connection;
+    protected   $_checkoutSession;
+    public      $_orderFactory;
 
-    /**
-     * @param \Magento\Framework\App\Helper\Context $context
-     */
+
     public function __construct(
-        \Magento\Framework\App\Helper\Context $context,
-        \Magento\Framework\App\ResourceConnection $resource,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Sales\Model\OrderFactory $orderFactory
+        ScopeConfigInterface $scopeConfig
     ) {
-        $this->_configTable = $resource->getTableName('core_config_data');
-        $this->_orderTable = $resource->getTableName('sales_order');
-        $this->_orderFactory = $orderFactory;
-        $this->connection = $resource->getConnection();
-
-        parent::__construct($context);
-        $this->_checkoutSession = $checkoutSession;
+        $this->scopeConfig = $scopeConfig;
     }
 
     public function getMerchantId()
@@ -45,5 +40,50 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
             self::ESEWA_MERCHANT_ID,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE
             );
+    }
+
+    /**
+     * Get Khalti Mode, 1 for Live, 0 for Test
+     */
+    public function getKhaltiMode()
+    {
+        return $this->scopeConfig->getValue(self::KHALTI_MODE,\Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+    }
+
+    /**
+     * Get Khalti Public Key
+     */
+    public function getPublicKey()
+    {
+        if(!$this->getKhaltiMode()){
+            return $this->scopeConfig->getValue(
+                self::KHALTI_LIVE_PUBLIC_KEY,
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+                );
+        } else {
+            return $this->scopeConfig->getValue(
+                self::KHALTI_TEST_PUBLIC_KEY,
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+                );
+        }
+
+    }
+
+    /**
+     * Get Khalti Private Key
+     */
+    public function getSecretKey()
+    {
+        if(!$this->getKhaltiMode()){
+            return $this->scopeConfig->getValue(
+                self::KHALTI_LIVE_SECRET_KEY,
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+                );
+        } else {
+            return $this->scopeConfig->getValue(
+                self::KHALTI_TEST_SECRET_KEY,
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+                );
+        }
     }
 }

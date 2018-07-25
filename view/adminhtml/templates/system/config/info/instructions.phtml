@@ -10,12 +10,156 @@
 */
 
 ?>
+<link rel="stylesheet" href="//cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
+<style>
+.tab {
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+}
+
+/* Style the buttons inside the tab */
+.tab button {
+    background-color: inherit;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    transition: 0.3s;
+    font-size: 17px;
+}
+
+/* Change background color of buttons on hover */
+.tab button:hover {
+    background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+.tab button.active {
+    background-color: #ccc;
+}
+
+/* Style the tab content */
+.tabcontent {
+    display: none;
+    padding: 47px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+}
+
+.khalti ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid #e7e7e7;
+    background-color: #f3f3f3;
+}
+
+.khalti li {
+    float: left;
+}
+
+.khalti li a {
+    display: block;
+    color: #666;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+.khalti li a:hover:not(.active) {
+    background-color: #ddd;
+}
+
+.khalti li a.active {
+    color: white;
+    background-color: #4CAF50;
+}
+</style>
 <div class="payflow-settings-notice">
-    <strong class="important-label">Instructions:</strong>
-    <p>Please Enter your Merchant ID before enabling</p>
-    <ul class="options-list">
-    </ul>
-    <p>For any problem in this Module Please Contact<a href="mailto:info@4wallsinn.com" target="_blank">info@4wallsinn.com</a></p>
-    <strong class="important-label">NOTE:</strong>
-    <p>This Payment Gateway Module was not made by Khalti</p>
+    <strong>Getting Started</strong>
+    <p>Khalti is the new generation Payment Gateway, Digital Wallet and API provider for various services. We provide you with true Payment Gateway, where you can accepts payments from
+    For Queries, feel free to call us at 9801165568 or email merchantapi@khalti.com</p>
+
+            <button class="tablinks" id="defaultTab" onclick="openTabs(event, 'Transactions'); return false;" href="#">Transactions</button>
+            <button class="tablinks" onclick="openTabs(event, 'FAQ'); return false;" href="#">FAQ</button>
+          <div id="Transactions" class="tabcontent">
+          <?php if($block->transactionDetail()){
+              $transactionDetail = $block->transactionDetail();
+              ?>
+            <div class="content">
+            <h3>Transaction Detail:</h3>
+            <p>Source: <?php echo $transactionDetail["source"];?></p>
+            <p>Mobile: <?php echo $transactionDetail["mobile"];?></p>
+            <p>Amount: <?php echo $transactionDetail["amount"];?></p>
+            <p>Fee Amount: <?php echo $transactionDetail["fee_amount"];?></p>
+            <p>Date: <?php echo $transactionDetail["date"];?></p>
+            <p>State: <?php echo $transactionDetail["state"];?></p>
+            <?php if($transactionDetail['refunded'] != true){ ?>
+                <a style="padding:5px;background-color:#e0e1e2" onclick="confirm('Are you sure you want to refund the amount?');return true;" href="<?php echo $this->getUrl('*/*/*', ['_current' => true, '_use_rewrite' => true]);?>&refund=true">Refund</a>
+            <?php }?>
+            <a style="padding:5px;background-color:#e0e1e2" onclick="window.history.go(-1);return false;">Back</a>
+            </div>
+          <?php } else {?>
+            <div class="content">
+                        <table class="table table-bordered table-hover" id="transaction_tbl" style="margin-top:20px">
+                        <thead>
+                        <tr>
+                        <th>Source</th>
+                        <th>Amount(Rs)</th>
+                        <th>Fee(Rs)</th>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>State</th>
+                        <th>#</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach($block->getTransactions() as $transaction){?>
+                        <tr>
+                        <td><?php echo $transaction['source'];?></td>
+                        <td><?php echo $transaction['amount'];?></td>
+                        <td><?php echo $transaction['fee'];?></td>
+                        <td><?php echo $transaction['date'];?></td>
+                        <td><?php echo $transaction['type'];?></td>
+                        <td><?php echo $transaction['state'];?></td>
+                        <td><a href="?transaction_id=<?php echo $transaction['idx'];?>" class="btn btn-primary">View</a></td>
+                        </tr>
+                    <?php } ?>                        
+                    </tbody>
+                    </table>
+                    </div> 
+            </div>
+            <?php } ?>
+    <div id="FAQ" class="tabcontent">
+    <strong class="important-label">FAQ</strong>
+            <p><strong>I forgot my password. How do I reset it ?</strong><br>Please visit khalti.com/recover to reset your password</p>
+            <p><strong>How do I change my password?</strong><br>You can change your password from your account setting page. Click on "Change Password"</p>
+            <p><strong>Why do you need my Citizenship, Drivers License or Passport?</strong><br>As per the policy for financial transactions, we need to verify your identity.</p>
+    </div>
 </div>
+
+<script>
+document.getElementById("defaultTab").click();
+function openTabs(evt, cityName) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    document.getElementById(cityName).style.display = "block";
+    evt.currentTarget.className += " active";
+}
+</script>
+
+<script type="text/javascript">
+    require(['jquery','dataTables','sweetAlert'],function($){
+        $('#transaction_tbl').DataTable();
+    });
+</script>

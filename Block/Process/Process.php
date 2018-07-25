@@ -25,7 +25,7 @@ class Process extends \Magento\Payment\Block\Form
     private $_order;
 
     /**
-     * @var \RealexPayments\HPP\Helper\Data
+     * @var \Fourwallsinn\Khalti\Helper\Data
      */
     private $_helper;
 
@@ -35,7 +35,7 @@ class Process extends \Magento\Payment\Block\Form
      * @param \Magento\Framework\View\Element\Template\Context $context
      * @param \Magento\Sales\Model\OrderFactory                $orderFactory
      * @param \Magento\Checkout\Model\Session                  $checkoutSession
-     * @param \RealexPayments\HPP\Helper\Data                  $helper
+     * @param \Fourwallsinn\Khalti\Helper\Data                 $helper
      * @param array                                            $data
      */
     public function __construct(

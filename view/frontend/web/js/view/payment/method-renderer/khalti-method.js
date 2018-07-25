@@ -12,20 +12,68 @@
         'jquery',
         'Magento_Checkout/js/view/payment/default',
         'Magento_Checkout/js/action/place-order',
+        'Magento_Checkout/js/model/quote',
         'Magento_Checkout/js/action/select-payment-method',
         'Magento_Customer/js/model/customer',
         'Magento_Checkout/js/checkout-data',
         'Magento_Checkout/js/model/payment/additional-validators',
-        'mage/url'
+        'mage/url',
+        'https://khalti.com/static/khalti-checkout.js'
      ],
-     function ( $,Component,placeOrderAction,selectPaymentMethodAction,customer,checkoutData,additionalValidators,url) {
+     function ( $,Component,placeOrderAction,quote,selectPaymentMethodAction,customer,checkoutData,additionalValidators,url) {
          'use strict';
+         
+         var handler;
+         var config = {
+            // replace the publicKey with yours
+            "publicKey": window.checkoutConfig.payment.khalti.khalti_public_key,
+            "productIdentity": quote.getQuoteId(),
+            "productName": "Product",
+            "productUrl": "url",
+            "eventHandler": {
+                onSuccess (payload) {
+                    // hit merchant api for initiating verfication
+                    var token = payload.token;
+                    var amount = payload.amount;
+                    console.log(payload);
+                    this.realPlaceOrder(payload);
+                },
+                onError (error) {
+                    console.log(error);
+                }
+            }
+        };
          return Component.extend({
             defaults: {
-                template: 'Fourwallsinn_Khalti/payment/khalti-form'
+                template: 'Fourwallsinn_Khalti/payment/khalti-form',
+                redirectAfterPlaceOrder: false,
             }, 
 
+            initialize: function () {
+                this._super();
+                this.loadKhaltiCheckout();
+            },
 
+            loadKhaltiCheckout: function (callback) {
+                if (typeof KhaltiCheckout === "undefined")
+                {
+                    var script = document.createElement('script');
+
+                    script.onload = function() {
+                        handler = new KhaltiCheckout(config);
+                    };
+                    script.onerror = function(response) {
+                        console.log("khalti checkout load error");
+                        console.log(response);
+                    };
+                    script.src = "https://khalti.com/static/khalti-checkout.js";
+                    document.head.appendChild(script);
+                }
+                else {
+                    handler = new KhaltiCheckout(config);
+                }
+            },
+            
             getCode: function () {
                 return 'khalti';
             },
@@ -45,25 +93,53 @@
             if (event) {
                 event.preventDefault();
             }
-            var self = this,
-                placeOrder,
-                emailValidationResult = customer.isLoggedIn(),
-                loginFormSelector = 'form[data-role=email-with-possible-login]';
-            if (!customer.isLoggedIn()) {
-                $(loginFormSelector).validation();
-                emailValidationResult = Boolean($(loginFormSelector + ' input[name=username]').valid());
-            }
-            if (emailValidationResult && this.validate() && additionalValidators.validate()) {
-                this.isPlaceOrderActionAllowed(false);
-                placeOrder = placeOrderAction(this.getData(), false, this.messageContainer);
 
-                $.when(placeOrder).fail(function () {
-                    self.isPlaceOrderActionAllowed(true);
-                }).done(this.afterPlaceOrder.bind(this));
-                return true;
-            }
-            return false;
+            var self = this;
+            this.isPlaceOrderActionAllowed(false);
+            var amount = quote.totals().base_grand_total*100;
+            var config = {
+                // replace the publicKey with yours
+                "publicKey": window.checkoutConfig.payment.khalti.khalti_public_key,
+                "productIdentity": quote.getQuoteId(),
+                "productName": "Product",
+                "productUrl": "url",
+                "eventHandler": {
+                    onSuccess (payload) {
+                        // hit merchant api for initiating verfication
+                        var token = payload.token;
+                        var amount = payload.amount;
+                        console.log(payload);
+                        self.realPlaceOrder(payload);
+                    },
+                    onError (error) {
+                        console.log(error);
+                    }
+                }
+            };
+
+            handler = new KhaltiCheckout(config);
+            
+            handler.show({amount: amount});
+            this.isPlaceOrderActionAllowed(true);
         },
+
+            realPlaceOrder: function (paylaod) {
+                var self = this;
+                this.getPlaceOrderDeferredObject()
+                    .fail(
+                        function () {
+                            self.isPlaceOrderActionAllowed(true);
+                        }
+                    ).done(
+                    function () {
+                        self.afterPlaceOrder(paylaod);
+
+                        if (self.redirectAfterPlaceOrder) {
+                            redirectOnSuccessAction.execute();
+                        }
+                    }
+                );
+            },
 
             selectPaymentMethod: function() {
                 selectPaymentMethodAction(this.getData());
@@ -71,11 +147,13 @@
                 return true;
             },
 
-            afterPlaceOrder: function () {
-                $.mage.redirect('/khalti/request/redirect');
+            afterPlaceOrder: function (payload) {
+                var token = payload.token;
+                var amount = payload.amount;
+                $.mage.redirect('/khalti/response/response?token='+token+'&amount='+amount);
+                return false;
             },
 
-            /** Redirect to paypal */
             continueToKhalti: function () {
                 //if (additionalValidators.validate()) {
                  //   update payment method information if additional data was changed
@@ -83,7 +161,6 @@
                   setPaymentMethodAction(this.messageContainer);
                    // return false;
                 //}
-               //window.location = 'http://www.magento.net/test.php';
                return false;
             }
 

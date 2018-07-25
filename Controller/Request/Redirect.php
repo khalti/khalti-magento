@@ -20,12 +20,10 @@ class Redirect extends \Magento\Framework\App\Action\Action
     ) {
         $this->_resultPageFactory = $resultPageFactory;
         parent::__construct($context);
-        //$this->_getOrder();
     }
 
     public function execute()
     {
-        //var_dump($this->_checkoutSession->getLastRealOrderId());
         return $this->_resultPageFactory->create();
 
     }
