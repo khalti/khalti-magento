@@ -81,6 +81,7 @@ class Response extends \Magento\Framework\App\Action\Action
         $token = isset( $_GET['token'] ) ? $_GET['token'] : "";
         $amount = isset( $_GET['amount'] ) ? $_GET['amount'] : "";
         $validate = $this->khalti_validate($token,$amount);
+
         $status_code = $validate['status_code'];
         $idx = $validate['idx'];
 
@@ -150,7 +151,7 @@ class Response extends \Magento\Framework\App\Action\Action
         curl_setopt($ch, CURLOPT_POSTFIELDS,$args);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
-        $headers = ['Authorization: Key'.$this->khaltiHelper->getSecretKey()];
+        $headers = ['Authorization: Key '.$this->khaltiHelper->getSecretKey()];
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
         // Response
@@ -158,10 +159,12 @@ class Response extends \Magento\Framework\App\Action\Action
         $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
         $response = json_decode($response);
+
         $idx = @$response->idx;
         $data = array(
             "idx" => $idx,
-            "status_code" => $status_code
+            "status_code" => $status_code,
+            "response" => $response
         );
         curl_close($ch);
         return $data;
