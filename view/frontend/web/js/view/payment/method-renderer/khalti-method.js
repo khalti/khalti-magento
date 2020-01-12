@@ -29,7 +29,7 @@
             "publicKey": window.checkoutConfig.payment.khalti.khalti_public_key,
             "productIdentity": quote.getQuoteId(),
             "productName": "Product",
-            "productUrl": "url",
+            "productUrl": new URL(window.checkoutConfig.checkoutUrl).origin,
             "eventHandler": {
                 onSuccess (payload) {
                     // hit merchant api for initiating verfication
@@ -102,7 +102,7 @@
                 "publicKey": window.checkoutConfig.payment.khalti.khalti_public_key,
                 "productIdentity": quote.getQuoteId(),
                 "productName": "Product",
-                "productUrl": "url",
+                "productUrl": new URL(window.checkoutConfig.checkoutUrl).origin,
                 "eventHandler": {
                     onSuccess (payload) {
                         // hit merchant api for initiating verfication

@@ -142,7 +142,7 @@ class Response extends \Magento\Framework\App\Action\Action
             'amount'  => $amount
            ));
 
-        $url = "https://khalti.com/api/payment/verify/";
+        $url = "https://khalti.com/api/v2/payment/verify/";
 
         # Make the call using API.
         $ch = curl_init();
