@@ -46,9 +46,6 @@
           <label>Sort Order</label>
           <frontend_class>validate-number</frontend_class>
         </field>
-        <field id="instructions" translate="label" type="textarea" sortOrder="7" showInDefault="1" showInWebsite="1" showInStore="1">
-          <label>Instructions</label>
-        </field>
         <field id="allowspecific" translate="label" type="allowspecific" sortOrder="8" showInDefault="1" showInWebsite="1" showInStore="0">
           <label>Payment from Applicable Countries</label>
           <source_model>Magento\Payment\Model\Config\Source\Allspecificcountries</source_model>

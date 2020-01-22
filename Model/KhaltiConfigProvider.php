@@ -47,7 +47,6 @@ class KhaltiConfigProvider implements ConfigProviderInterface
      */
     public function getConfig()
     {
-
         return [
             'payment' => [
                 self::CODE => [

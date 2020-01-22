@@ -33,9 +33,6 @@
             "eventHandler": {
                 onSuccess (payload) {
                     // hit merchant api for initiating verfication
-                    var token = payload.token;
-                    var amount = payload.amount;
-                    console.log(payload);
                     this.realPlaceOrder(payload);
                 },
                 onError (error) {
@@ -86,7 +83,7 @@
              * @returns {String}
              */
             getInstructions: function () {
-                return window.checkoutConfig.payment.instructions[this.item.method];
+                // return window.checkoutConfig.payment.instructions[this.item.method];
             },
 
             placeOrder: function (data, event) {
@@ -98,17 +95,12 @@
             this.isPlaceOrderActionAllowed(false);
             var amount = quote.totals().base_grand_total*100;
             var config = {
-                // replace the publicKey with yours
                 "publicKey": window.checkoutConfig.payment.khalti.khalti_public_key,
                 "productIdentity": quote.getQuoteId(),
                 "productName": "Product",
                 "productUrl": new URL(window.checkoutConfig.checkoutUrl).origin,
                 "eventHandler": {
                     onSuccess (payload) {
-                        // hit merchant api for initiating verfication
-                        var token = payload.token;
-                        var amount = payload.amount;
-                        console.log(payload);
                         self.realPlaceOrder(payload);
                     },
                     onError (error) {
