@@ -12,88 +12,106 @@
 namespace Fourwallsinn\Khalti\Controller\Response;
 
 use Fourwallsinn\Khalti\Helper\Data as KhaltiHelper;
+use Magento\Checkout\Model\Session as CheckoutSession;
+use Magento\Framework\App\Action\Action;
+use Magento\Framework\App\Action\Context;
+use Magento\Framework\App\ResponseFactory;
+use Magento\Framework\DB\Transaction;
+use Magento\Framework\UrlInterface;
+use Magento\Sales\Model\Order;
+use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
+use Magento\Sales\Model\Service\InvoiceService;
+use Magento\Framework\Serialize\Serializer\Json;
 
-class Response extends \Magento\Framework\App\Action\Action
+class Response extends Action
 {
-    protected $orderRepository;
-    protected $_redirect;
-    protected $_order,$_quote;
-    protected $_checkoutSession;
-    protected $_customerSession;
-        /**
-     * @var \Magento\Sales\Model\Service\InvoiceService
+    /**
+     * @var Order
+     */
+    protected $_order;
+    /**
+     * @var InvoiceService
      */
     protected $_invoiceService;
-    protected $_invoiceSender;
-    protected $_resultRedirect;
     /**
-     * @var \Magento\Framework\DB\Transaction
+     * @var InvoiceSender
+     */
+    protected $_invoiceSender;
+    /**
+     * @var Transaction
      */
     protected $_transaction;
-    protected $_payment,$_orderFactory,$_quoteRepository,$_quoteManagement,$_orderRepository,$totalsCollector,$_registry;
+    /**
+     * @var ResponseFactory
+     */
+    private $_responseFactory;
+    /**
+     * @var KhaltiHelper
+     */
+    private $khaltiHelper;
+    /**
+     * @var Json
+     */
+    protected $jsonSerializer;
+    /**
+     * @var CheckoutSession
+     */
+    private $_checkoutSession;
 
+    /**
+     * Response constructor.
+     * @param Context $context
+     * @param CheckoutSession $checkoutSession
+     * @param Order $order
+     * @param InvoiceService $invoiceService
+     * @param InvoiceSender $invoiceSender
+     * @param Transaction $transaction
+     * @param ResponseFactory $responseFactory
+     * @param UrlInterface $url
+     * @param KhaltiHelper $paymentHelper
+     * @param Json $jsonSerializer
+     */
     public function __construct(
-        \Magento\Framework\App\Action\Context $context,
-        \Magento\Customer\Model\Session $customerSession,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Magento\Sales\Model\OrderFactory $orderFactory,
-        \Magento\Sales\Api\OrderRepositoryInterface $orderRepository,
-        //\Magento\Paypal\Model\Express\Checkout\Factory $checkoutFactory,
-        \Magento\Framework\Session\Generic $paypalSession,
-        \Magento\Framework\Url\Helper\Data $urlHelper,
-        \Magento\Customer\Model\Url $customerUrl,
-        \Magento\Sales\Model\Order $order,
-        \Magento\Quote\Model\QuoteFactory $quote,
-        \Magento\Quote\Api\CartRepositoryInterface $quoteRepository,
-        \Magento\Quote\Api\CartManagementInterface $quoteManagement,
-        \Magento\Checkout\Api\AgreementsValidatorInterface $agreementValidator,
-        \Magento\Framework\App\Response\RedirectInterface $redirect,
-        \Magento\Quote\Model\Quote\TotalsCollector $totalsCollector,
-        \Magento\Sales\Model\Service\InvoiceService $invoiceService,
-        \Magento\Sales\Model\Order\Email\Sender\InvoiceSender $invoiceSender,
-        \Magento\Framework\DB\Transaction $transaction,
-        \Magento\Framework\App\ResponseFactory $responseFactory,
-        \Magento\Framework\UrlInterface $url,
-        KhaltiHelper $paymentHelper
+        Context $context,
+        CheckoutSession $checkoutSession,
+        Order $order,
+        InvoiceService $invoiceService,
+        InvoiceSender $invoiceSender,
+        Transaction $transaction,
+        ResponseFactory $responseFactory,
+        UrlInterface $url,
+        KhaltiHelper $paymentHelper,
+        Json $jsonSerializer
     ) {
-        $this->agreementsValidator = $agreementValidator;
         $this->_checkoutSession = $checkoutSession;
-        $this->_customerSession = $customerSession;
-        $this->_orderFactory = $orderFactory;
         $this->_order = $order;
-        $this->_quote = $quote;
-        $this->_redirect = $redirect;
-        $this->_quoteRepository = $quoteRepository;
-        $this->_quoteManagement = $quoteManagement;
-        $this->_orderRepository = $orderRepository;
-        $this->totalsCollector = $totalsCollector;
         $this->_invoiceService = $invoiceService;
         $this->_transaction = $transaction;
         $this->_invoiceSender = $invoiceSender;
         $this->_responseFactory = $responseFactory;
         $this->_url = $url;
         $this->khaltiHelper = $paymentHelper;
+        $this->jsonSerializer = $jsonSerializer;
         parent::__construct($context);
     }
 
     public function execute()
     {
-        $token = isset( $_GET['token'] ) ? $_GET['token'] : "";
-        $amount = isset( $_GET['amount'] ) ? $_GET['amount'] : "";
+        $token = $this->getRequest()->getParam('token');
+        $amount = $this->getRequest()->getParam('amount');
         $validate = $this->khalti_validate($token,$amount);
 
         $status_code = $validate['status_code'];
         $idx = $validate['idx'];
 
         $order = $this->_checkoutSession->getLastRealOrder();
-        $orderId = $this->_checkoutSession->getLastRealOrderId();
         $total = $order->getBaseGrandTotal()*100;
 
         if($amount=="$total" && $idx!=null && $status_code == 200)
         {
-            $note = json_encode($validate);
-            $order->setState(\Magento\Sales\Model\Order::STATE_PROCESSING)
-            ->setStatus(\Magento\Sales\Model\Order::STATE_PROCESSING);
+            $note = $this->jsonSerializer->serialize($validate);
+            $order->setState(Order::STATE_PROCESSING)
+            ->setStatus(Order::STATE_PROCESSING);
             $order->save();
 
             if($order->canInvoice()) {
@@ -101,33 +119,32 @@ class Response extends \Magento\Framework\App\Action\Action
                 $invoice = $this->_invoiceService->prepareInvoice($order);
                 $invoice->register();
                 $invoice->save();
-                $transactionSave = $this->_transaction->addObject(
-                    $invoice
-                )->addObject(
-                    $invoice->getOrder()
-                );
+                $transactionSave = $this->_transaction
+                    ->addObject($invoice)
+                    ->addObject($invoice->getOrder());
                 $transactionSave->save();
                 $this->_invoiceSender->send($invoice);
 
-                $order->addStatusHistoryComment(
-                    __($note)
-                )
-                ->setIsCustomerNotified(true)
-                ->save();
+                $order->addStatusHistoryComment(__($note))
+                    ->setIsCustomerNotified(true)
+                    ->save();
             }
             $RedirectUrl = $this->_url->getUrl('checkout/onepage/success');
-            $this->_responseFactory->create()->setRedirect($RedirectUrl)->sendResponse();
-            die();
+            $this->_responseFactory
+                ->create()
+                ->setRedirect($RedirectUrl)
+                ->sendResponse();
+            return;
 
-        }
-        else
-        {
+        } else {
             $this->cancelOrder();
             $RedirectUrl = $this->_url->getUrl('checkout/onepage/failure');
-            $this->_responseFactory->create()->setRedirect($RedirectUrl)->sendResponse();
-            die();
+            $this->_responseFactory
+                ->create()
+                ->setRedirect($RedirectUrl)
+                ->sendResponse();
         }
-
+        return;
     }
 
     public function cancelOrder()

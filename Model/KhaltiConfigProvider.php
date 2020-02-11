@@ -14,6 +14,8 @@ namespace Fourwallsinn\Khalti\Model;
 use Magento\Checkout\Model\ConfigProviderInterface;
 use Magento\Framework\Escaper;
 use Fourwallsinn\Khalti\Helper\Data as KhaltiHelper;
+use Magento\Payment\Model\Method\AbstractMethod;
+
 class KhaltiConfigProvider implements ConfigProviderInterface
 {
     protected $khaltiHelper;
@@ -21,7 +23,7 @@ class KhaltiConfigProvider implements ConfigProviderInterface
     const CODE = 'khalti';
 
     /**
-     * @var \Magento\Payment\Model\Method\AbstractMethod[]
+     * @var AbstractMethod[]
      */
     public $methods = [];
 
@@ -31,7 +33,7 @@ class KhaltiConfigProvider implements ConfigProviderInterface
     public $escaper;
 
     /**
-     * @param PaymentHelper $paymentHelper
+     * @param KhaltiHelper $paymentHelper
      * @param Escaper $escaper
      */
     public function __construct(

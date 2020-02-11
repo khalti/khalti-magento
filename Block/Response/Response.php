@@ -10,36 +10,51 @@
 */
 namespace Fourwallsinn\Khalti\Block\Response;
 
+use Fourwallsinn\Khalti\Helper\Data;
+use Magento\Checkout\Model\Order;
+use Magento\Checkout\Model\Session;
+use Magento\Framework\View\Element\Template;
+use Magento\Framework\View\Element\Template\Context;
+use Magento\Payment\Model\Method\AbstractMethod;
+use Magento\Sales\Model\OrderFactory;
+
 /**
  * Abstract class for Cash On Delivery and Bank Transfer payment method form
  */
-class Response extends \Magento\Framework\View\Element\Template
+class Response extends Template
 {
     /**
-     * @var \Magento\Checkout\Model\Session
+     * @var Session
      */
     protected $_checkoutSession;
 
     /**
-     * @var \Magento\Checkout\Model\Order
+     * @var Order
      */
     protected $_order;
 
         /**
-     * @var \Magento\Checkout\Model\Order
+     * @var Order
      */
     protected $_orderFactory;
 
     /**
-     * @var \Fourwallsinn\Khalti\Helper\Data
+     * @var Data
      */
     protected $_helper;
 
+    /**
+     * Response constructor.
+     * @param Context $context
+     * @param OrderFactory $orderFactory
+     * @param Session $checkoutSession
+     * @param Data $helper
+     */
     public function __construct(
-        \Magento\Framework\View\Element\Template\Context $context,
-        \Magento\Sales\Model\OrderFactory $orderFactory,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Fourwallsinn\Khalti\Helper\Data $helper
+        Context $context,
+        OrderFactory $orderFactory,
+        Session $checkoutSession,
+        Data $helper
     )
     {
         
@@ -68,7 +83,7 @@ class Response extends \Magento\Framework\View\Element\Template
     public function getInstructions()
     {
         if ($this->_instructions === null) {
-            /** @var \Magento\Payment\Model\Method\AbstractMethod $method */
+            /** @var AbstractMethod $method */
             $method = $this->getMethod();
             $this->_instructions = $method->getConfigData('instructions');
         }
@@ -78,7 +93,7 @@ class Response extends \Magento\Framework\View\Element\Template
     /**
     * Get the Order Id
     *
-    * @return order increment id
+    * @return int increment id
     */
     public function getOrderId()
     {
@@ -88,7 +103,7 @@ class Response extends \Magento\Framework\View\Element\Template
     /**
     * Get the Grand Total.
     *
-    * @return order grand total id
+    * @return float grand total id
     */
     public function getTotal()
     {
@@ -99,7 +114,7 @@ class Response extends \Magento\Framework\View\Element\Template
     /**
     * Get the Order Id
     *
-    * @return order increment id
+    * @return int increment id
     */
     public function getMerchantId()
     {
@@ -120,7 +135,7 @@ class Response extends \Magento\Framework\View\Element\Template
     /**
      * Get frontend checkout session object.
      *
-     * @return \Magento\Checkout\Model\Session
+     * @return Session
      */
     private function _getCheckout()
     {

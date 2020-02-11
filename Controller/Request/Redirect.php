@@ -11,12 +11,16 @@
 
 namespace Fourwallsinn\Khalti\Controller\Request;
 
-class Redirect extends \Magento\Framework\App\Action\Action
+use Magento\Framework\App\Action\Action;
+use Magento\Framework\App\Action\Context;
+use Magento\Framework\View\Result\PageFactory;
+
+class Redirect extends Action
 {
 
     public function __construct(
-        \Magento\Framework\App\Action\Context $context,
-        \Magento\Framework\View\Result\PageFactory $resultPageFactory
+        Context $context,
+        PageFactory $resultPageFactory
     ) {
         $this->_resultPageFactory = $resultPageFactory;
         parent::__construct($context);

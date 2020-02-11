@@ -12,8 +12,10 @@
 namespace Fourwallsinn\Khalti\Helper;
 
 use \Magento\Framework\App\Config\ScopeConfigInterface as ScopeConfigInterface;
+use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Store\Model\ScopeInterface;
 
-class Data extends \Magento\Framework\App\Helper\AbstractHelper
+class Data extends AbstractHelper
 {
     const KHALTI_LIVE_PUBLIC_KEY = 'payment/khalti/khalti_live_public_key';
     const KHALTI_LIVE_SECRET_KEY = 'payment/khalti/khalti_live_secret_key';
@@ -21,8 +23,6 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     const KHALTI_TEST_SECRET_KEY = 'payment/khalti/khalti_test_secret_key';
     const KHALTI_MODE            = 'payment/khalti/khalti_test_mode';
 
-    public      $_configTable;
-    public      $_orderTable;
     public      $connection;
     protected   $_checkoutSession;
     public      $_orderFactory;
@@ -38,7 +38,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
     {
         return $this->scopeConfig->getValue(
             self::ESEWA_MERCHANT_ID,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+            ScopeInterface::SCOPE_STORE
             );
     }
 
@@ -47,7 +47,7 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
      */
     public function getKhaltiMode()
     {
-        return $this->scopeConfig->getValue(self::KHALTI_MODE,\Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        return $this->scopeConfig->getValue(self::KHALTI_MODE, ScopeInterface::SCOPE_STORE);
     }
 
     /**
@@ -58,12 +58,12 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         if(!$this->getKhaltiMode()){
             return $this->scopeConfig->getValue(
                 self::KHALTI_LIVE_PUBLIC_KEY,
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+                ScopeInterface::SCOPE_STORE
                 );
         } else {
             return $this->scopeConfig->getValue(
                 self::KHALTI_TEST_PUBLIC_KEY,
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+                ScopeInterface::SCOPE_STORE
                 );
         }
 
@@ -77,12 +77,12 @@ class Data extends \Magento\Framework\App\Helper\AbstractHelper
         if(!$this->getKhaltiMode()){
             return $this->scopeConfig->getValue(
                 self::KHALTI_LIVE_SECRET_KEY,
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+                ScopeInterface::SCOPE_STORE
                 );
         } else {
             return $this->scopeConfig->getValue(
                 self::KHALTI_TEST_SECRET_KEY,
-                \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+                ScopeInterface::SCOPE_STORE
                 );
         }
     }
