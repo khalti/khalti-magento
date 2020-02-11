@@ -90,8 +90,7 @@ class Redirect extends Template
     */
     public function getOrderId()
     {
-        print_r($this->_checkoutSession->getLastRealOrderId()) ;
-        exit;
+        return $this->_checkoutSession->getLastRealOrderId();
     }
 
     /**
