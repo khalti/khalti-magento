@@ -11,35 +11,43 @@
 namespace Fourwallsinn\Khalti\Block\Request;
 
 
-class Redirect extends \Magento\Framework\View\Element\Template
+use Fourwallsinn\Khalti\Helper\Data;
+use Magento\Checkout\Model\Order;
+use Magento\Checkout\Model\Session;
+use Magento\Framework\View\Element\Template;
+use Magento\Framework\View\Element\Template\Context;
+use Magento\Payment\Model\Method\AbstractMethod;
+use Magento\Sales\Model\OrderFactory;
+
+class Redirect extends Template
 {
     /**
-     * @var \Magento\Checkout\Model\Session
+     * @var Session
      */
     protected $_checkoutSession;
 
     /**
-     * @var \Magento\Checkout\Model\Order
+     * @var Order
      */
     protected $_order;
 
         /**
-     * @var \Magento\Checkout\Model\Order
+     * @var Order
      */
     protected $_orderFactory;
 
     /**
-     * @var \Fourwallsinn\Khalti\Helper\Data
+     * @var Data
      */
     protected $_helper;
 
     public $_template = 'request/redirect.phtml';
 
     public function __construct(
-        \Magento\Framework\View\Element\Template\Context $context,
-        \Magento\Sales\Model\OrderFactory $orderFactory,
-        \Magento\Checkout\Model\Session $checkoutSession,
-        \Fourwallsinn\Khalti\Helper\Data $helper
+        Context $context,
+        OrderFactory $orderFactory,
+        Session $checkoutSession,
+        Data $helper
     )
     {
         
@@ -68,7 +76,7 @@ class Redirect extends \Magento\Framework\View\Element\Template
     public function getInstructions()
     {
         if ($this->_instructions === null) {
-            /** @var \Magento\Payment\Model\Method\AbstractMethod $method */
+            /** @var AbstractMethod $method */
             $method = $this->getMethod();
             $this->_instructions = $method->getConfigData('instructions');
         }
@@ -82,7 +90,8 @@ class Redirect extends \Magento\Framework\View\Element\Template
     */
     public function getOrderId()
     {
-        return $this->_checkoutSession->getLastRealOrderId();
+        print_r($this->_checkoutSession->getLastRealOrderId()) ;
+        exit;
     }
 
     /**
@@ -135,7 +144,7 @@ class Redirect extends \Magento\Framework\View\Element\Template
     /**
      * Get frontend checkout session object.
      *
-     * @return \Magento\Checkout\Model\Session
+     * @return Session
      */
     private function _getCheckout()
     {
