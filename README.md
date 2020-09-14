@@ -1,7 +1,8 @@
 # Khalti Payment Module for Magento 2
 
-Requires magento version at least: `2.x`
-Tested and working upto `Magento 2.3.3`
+### Requirement & Compatibility
+- Requires magento version at least: `2.x`
+- Tested and working upto `Magento 2.4.0`
 
 ### Installation
 - Create the following folder structure inside "app" folder and copy all the files
@@ -16,5 +17,5 @@ Tested and working upto `Magento 2.3.3`
     `php bin/magento setup:di:compile`
 - If you are on Production Environment, make sure you run the following command as well
   `php bin/magento setup:static-content:deploy`
-- Finally FLush the Cache
+- Finally Flush the Cache
     `php bin/magento cache:flush`

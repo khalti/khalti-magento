@@ -1,14 +1,14 @@
 /**
-* Fourwallsinn_Khalti
-*
-* @category    Payment Gateway
-* @package     Fourwallsinn_Khalti
-* @author      4 Walls Innovations
-* @copyright   4 Walls Innovations (http://www.4wallsinn.com)
-* @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
-*/
- define(
-     [
+ * Fourwallsinn_Khalti
+ *
+ * @category    Payment Gateway
+ * @package     Fourwallsinn_Khalti
+ * @author      4 Walls Innovations
+ * @copyright   4 Walls Innovations (http://www.4wallsinn.com)
+ * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
+define(
+    [
         'jquery',
         'Magento_Checkout/js/view/payment/default',
         'Magento_Checkout/js/action/place-order',
@@ -18,33 +18,33 @@
         'Magento_Checkout/js/checkout-data',
         'Magento_Checkout/js/model/payment/additional-validators',
         'mage/url',
-        'https://khalti.com/static/khalti-checkout.js'
-     ],
-     function ( $,Component,placeOrderAction,quote,selectPaymentMethodAction,customer,checkoutData,additionalValidators,url) {
-         'use strict';
-         
-         var handler;
-         var config = {
+        'https://unpkg.com/khalti-checkout-web@latest/dist/khalti-checkout.iffe.js'
+    ],
+    function ($, Component, placeOrderAction, quote, selectPaymentMethodAction, customer, checkoutData, additionalValidators, url) {
+        'use strict';
+
+        var handler;
+        var config = {
             // replace the publicKey with yours
             "publicKey": window.checkoutConfig.payment.khalti.khalti_public_key,
             "productIdentity": quote.getQuoteId(),
             "productName": "Product",
             "productUrl": new URL(window.checkoutConfig.checkoutUrl).origin,
             "eventHandler": {
-                onSuccess (payload) {
+                onSuccess(payload) {
                     // hit merchant api for initiating verfication
                     this.realPlaceOrder(payload);
                 },
-                onError (error) {
+                onError(error) {
                     console.log(error);
                 }
             }
         };
-         return Component.extend({
+        return Component.extend({
             defaults: {
                 template: 'Fourwallsinn_Khalti/payment/khalti-form',
                 redirectAfterPlaceOrder: false,
-            }, 
+            },
 
             initialize: function () {
                 this._super();
@@ -52,25 +52,23 @@
             },
 
             loadKhaltiCheckout: function (callback) {
-                if (typeof KhaltiCheckout === "undefined")
-                {
+                if (typeof KhaltiCheckout === "undefined") {
                     var script = document.createElement('script');
 
-                    script.onload = function() {
+                    script.onload = function () {
                         handler = new KhaltiCheckout(config);
                     };
-                    script.onerror = function(response) {
+                    script.onerror = function (response) {
                         console.log("khalti checkout load error");
                         console.log(response);
                     };
-                    script.src = "https://khalti.com/static/khalti-checkout.js";
+                    script.src = "https://unpkg.com/khalti-checkout-web@latest/dist/khalti-checkout.iffe.js";
                     document.head.appendChild(script);
-                }
-                else {
+                } else {
                     handler = new KhaltiCheckout(config);
                 }
             },
-            
+
             getCode: function () {
                 return 'khalti';
             },
@@ -87,33 +85,36 @@
             },
 
             placeOrder: function (data, event) {
-            if (event) {
-                event.preventDefault();
-            }
-
-            var self = this;
-            this.isPlaceOrderActionAllowed(false);
-            var amount = quote.totals().base_grand_total*100;
-            var config = {
-                "publicKey": window.checkoutConfig.payment.khalti.khalti_public_key,
-                "productIdentity": quote.getQuoteId(),
-                "productName": "Product",
-                "productUrl": new URL(window.checkoutConfig.checkoutUrl).origin,
-                "eventHandler": {
-                    onSuccess (payload) {
-                        self.realPlaceOrder(payload);
-                    },
-                    onError (error) {
-                        console.log(error);
-                    }
+                if (event) {
+                    event.preventDefault();
                 }
-            };
 
-            handler = new KhaltiCheckout(config);
-            
-            handler.show({amount: amount});
-            this.isPlaceOrderActionAllowed(true);
-        },
+                var self = this;
+                this.isPlaceOrderActionAllowed(false);
+                var amount = quote.totals().base_grand_total * 100;
+                var config = {
+                    "publicKey": window.checkoutConfig.payment.khalti.khalti_public_key,
+                    "productIdentity": quote.getQuoteId(),
+                    "productName": "Product",
+                    "productUrl": new URL(window.checkoutConfig.checkoutUrl).origin,
+                    "eventHandler": {
+                        onSuccess(payload) {
+                            self.realPlaceOrder(payload);
+                        },
+                        onError(error) {
+                            console.log(error);
+                        }
+                    }
+                };
+
+                handler = new KhaltiCheckout(config);
+                setTimeout(function () {
+                    handler.show({
+                        amount: amount
+                    });
+                }, 500);
+                this.isPlaceOrderActionAllowed(true);
+            },
 
             realPlaceOrder: function (paylaod) {
                 var self = this;
@@ -123,17 +124,17 @@
                             self.isPlaceOrderActionAllowed(true);
                         }
                     ).done(
-                    function () {
-                        self.afterPlaceOrder(paylaod);
+                        function () {
+                            self.afterPlaceOrder(paylaod);
 
-                        if (self.redirectAfterPlaceOrder) {
-                            redirectOnSuccessAction.execute();
+                            if (self.redirectAfterPlaceOrder) {
+                                redirectOnSuccessAction.execute();
+                            }
                         }
-                    }
-                );
+                    );
             },
 
-            selectPaymentMethod: function() {
+            selectPaymentMethod: function () {
                 selectPaymentMethodAction(this.getData());
                 checkoutData.setSelectedPaymentMethod(this.item.method);
                 return true;
@@ -142,20 +143,20 @@
             afterPlaceOrder: function (payload) {
                 var token = payload.token;
                 var amount = payload.amount;
-                $.mage.redirect('/khalti/response/response?token='+token+'&amount='+amount);
+                $.mage.redirect('/khalti/response/response?token=' + token + '&amount=' + amount);
                 return false;
             },
 
             continueToKhalti: function () {
                 //if (additionalValidators.validate()) {
-                 //   update payment method information if additional data was changed
-                  this.selectPaymentMethod();
-                  setPaymentMethodAction(this.messageContainer);
-                   // return false;
+                //   update payment method information if additional data was changed
+                this.selectPaymentMethod();
+                setPaymentMethodAction(this.messageContainer);
+                // return false;
                 //}
-               return false;
+                return false;
             }
 
         });
-     }
+    }
 );
