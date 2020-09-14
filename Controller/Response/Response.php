@@ -1,13 +1,13 @@
 <?php
 /**
-* Fourwallsinn_Khalti
-*
-* @category    Payment Gateway
-* @package     Fourwallsinn_Khalti
-* @author      4 Walls Innovations
-* @copyright   4 Walls Innovations (http://www.4wallsinn.com)
-* @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
-*/
+ * Fourwallsinn_Khalti
+ *
+ * @category    Payment Gateway
+ * @package     Fourwallsinn_Khalti
+ * @author      4 Walls Innovations
+ * @copyright   4 Walls Innovations (http://www.4wallsinn.com)
+ * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
 
 namespace Fourwallsinn\Khalti\Controller\Response;
 
@@ -17,11 +17,11 @@ use Magento\Framework\App\Action\Action;
 use Magento\Framework\App\Action\Context;
 use Magento\Framework\App\ResponseFactory;
 use Magento\Framework\DB\Transaction;
+use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Framework\UrlInterface;
 use Magento\Sales\Model\Order;
 use Magento\Sales\Model\Order\Email\Sender\InvoiceSender;
 use Magento\Sales\Model\Service\InvoiceService;
-use Magento\Framework\Serialize\Serializer\Json;
 
 class Response extends Action
 {
@@ -84,37 +84,36 @@ class Response extends Action
         Json $jsonSerializer
     ) {
         $this->_checkoutSession = $checkoutSession;
-        $this->_order = $order;
-        $this->_invoiceService = $invoiceService;
-        $this->_transaction = $transaction;
-        $this->_invoiceSender = $invoiceSender;
+        $this->_order           = $order;
+        $this->_invoiceService  = $invoiceService;
+        $this->_transaction     = $transaction;
+        $this->_invoiceSender   = $invoiceSender;
         $this->_responseFactory = $responseFactory;
-        $this->_url = $url;
-        $this->khaltiHelper = $paymentHelper;
-        $this->jsonSerializer = $jsonSerializer;
+        $this->_url             = $url;
+        $this->khaltiHelper     = $paymentHelper;
+        $this->jsonSerializer   = $jsonSerializer;
         parent::__construct($context);
     }
 
     public function execute()
     {
-        $token = $this->getRequest()->getParam('token');
-        $amount = $this->getRequest()->getParam('amount');
-        $validate = $this->khalti_validate($token,$amount);
+        $token    = $this->getRequest()->getParam('token');
+        $amount   = $this->getRequest()->getParam('amount');
+        $validate = $this->khalti_validate($token, $amount);
 
         $status_code = $validate['status_code'];
-        $idx = $validate['idx'];
+        $idx         = $validate['idx'];
 
         $order = $this->_checkoutSession->getLastRealOrder();
-        $total = $order->getBaseGrandTotal()*100;
+        $total = $order->getBaseGrandTotal() * 100;
 
-        if($amount=="$total" && $idx!=null && $status_code == 200)
-        {
+        if ($amount == "$total" && $idx != null && $status_code == 200) {
             $note = $this->jsonSerializer->serialize($validate);
             $order->setState(Order::STATE_PROCESSING)
-            ->setStatus(Order::STATE_PROCESSING);
+                ->setStatus(Order::STATE_PROCESSING);
             $order->save();
 
-            if($order->canInvoice()) {
+            if ($order->canInvoice()) {
 
                 $invoice = $this->_invoiceService->prepareInvoice($order);
                 $invoice->register();
@@ -134,7 +133,7 @@ class Response extends Action
                 ->create()
                 ->setRedirect($RedirectUrl)
                 ->sendResponse();
-            return;
+            die;
 
         } else {
             $this->cancelOrder();
@@ -143,8 +142,8 @@ class Response extends Action
                 ->create()
                 ->setRedirect($RedirectUrl)
                 ->sendResponse();
+            die;
         }
-        return;
     }
 
     public function cancelOrder()
@@ -152,38 +151,34 @@ class Response extends Action
         $this->_checkoutSession->getLastRealOrder()->cancel()->save();
     }
 
-    public function khalti_validate($token,$amount)
+    public function khalti_validate($token, $amount)
     {
-        $args = http_build_query(array(
-            'token' => $token,
-            'amount'  => $amount
-           ));
+        $client = new \Zend\Http\Client();
+        $client->setUri('https://khalti.com/api/v2/payment/verify/');
+        $client->setMethod('POST');
 
-        $url = "https://khalti.com/api/v2/payment/verify/";
+        $params = [
+            'token'  => $token,
+            'amount' => $amount,
+        ];
 
-        # Make the call using API.
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS,$args);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $headers = [
+            "Authorization" => sprintf("Key %s", $this->khaltiHelper->getSecretKey()),
+        ];
 
-        $headers = ['Authorization: Key '.$this->khaltiHelper->getSecretKey()];
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        $client->setHeaders($headers);
+        $client->setParameterPost($params);
+        $response = $client->send();
 
-        // Response
-        $response = curl_exec($ch);
-        $status_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $body = $response->getBody();
+        $body = json_decode($body, true);
 
-        $response = json_decode($response);
+        $data = [
+            "idx" => array_key_exists("idx", $body) ? $body['idx'] : null,
+            "status_code" => $response->getStatusCode(),
+            "response" => $response->getBody()
+        ];
 
-        $idx = @$response->idx;
-        $data = array(
-            "idx" => $idx,
-            "status_code" => $status_code,
-            "response" => $response
-        );
-        curl_close($ch);
         return $data;
     }
 
